@@ -1,0 +1,28 @@
+<html lang='en'>
+    <head>
+        <meta charset='utf-8'>
+        <link rel='stylesheet' href='../static/style.css'>
+        <link href="https://fonts.googleapis.com/css?family=Cormorant+SC" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Great+Vibes" rel="stylesheet">
+        <script src='../static/client.js'></script>
+    </head>
+    <body>
+    <div class="sideimage">
+	<img src = "static/jane_back.jpg" width="408" height="582" />
+	<a href = "https://github.com/tank671/" target="_blank"><img src="static/GitHub-Mark-Light-32px.png" target="_blank" /></a>
+    </div>
+
+
+    <div class="main">
+	<div class="center"> 
+	  <div class="title">AustenNet</div>
+	  <div class="description">It is a truth universally acknowledged, that a single computer in possession of a good intelligence, must be in want of a Twitter account.</div>
+	    <span class="input"> <input id="text-input" onchange='showText(this)' type="text" placeholder="Type the first few words of the tweet" maxlength="20"> </span>
+	    <div class='analyze'>
+		    <button id='analyze-button' class='analyze-button' type='button' onclick='analyze()'>Generate Text</button>
+	    </div>
+	</div>
+	<div class='result-label'> <label id='result-label'></label> </div>
+    </div>
+    </body>
+</html>
