@@ -1,0 +1,14 @@
+Difficult parts:
+- getting text in the right form, dealing with whitespace and missing data appropriately
+- getting the direct download link with the large size
+- of course everything needs to be in the right directory structure,
+and I had left mine over from the previous webapp which made it not work
+- changing everything to receive text data would have been impossible without templates
+
+
+Places where things went wrong:
+- don't understand why blank.csv needs to have the structure it does
+- don't understand why the directory structure I did have (with all the
+app files in the zeit directory) didn't work
+
+- for heroku app, there were some parts I didn't do at first -- scaling the app in particular -- could be why it didn't work at first
