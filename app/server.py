@@ -1,13 +1,18 @@
 from starlette.applications import Starlette
-from starlette.responses import HTMLResponse, JSONResponse
+from starlette.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from starlette.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
+from apscheduler.schedulers.background import BackgroundScheduler
 import uvicorn, aiohttp, asyncio
 from io import BytesIO
 import sys
 from pathlib import Path
 import csv
 import time
+import tweepy
+import csv
+import re
+import os
 
 from fastai import *
 from fastai.text import *
@@ -19,6 +24,7 @@ path = Path(__file__).parent
 app = Starlette()
 app.add_middleware(CORSMiddleware, allow_origins=['*'], allow_headers=['X-Requested-With', 'Content-Type'])
 app.mount('/static', StaticFiles(directory='app/static'))
+
 
 async def download_file(url, dest):
     if dest.exists(): return
@@ -45,43 +51,57 @@ loop.close()
 
 @app.route('/')
 def index(request):
-    html = path/'view'/'index.html'
+    html=path/'view'/'index.html'
     return HTMLResponse(html.open().read())
 
 @app.route('/analyze', methods=['POST'])
 async def analyze(request):
     data = await request.form()
-
     return JSONResponse({'result': textResponse(data)})
+
+def trimResponse(text, n=0):
+    """
+    takes off the last fragment so we end on a sentence boundary
+    n is the number of fragments to count back from the end
+    """
+    pieces = re.split(r"[\.\!\?]", text)
+    punc = re.findall(r"[\.\!\?]", text)
+    weave = [pieces[i]+punc[i] for i in range(len(pieces)-(1+n))]
+    res = "".join(weave)
+    last = res.split()[-1].lower()
+    if last == 'mr.' or last == 'mrs.':
+        res = trimResponse(text, n+1)
+    return res
 
 def textResponse(data):
     csv_string = learn.predict(data['file'], 80, temperature=1.1, min_p=0.001)
     time.sleep(2)
-
-    pieces = csv_string.split('.')
-    pieces = '.'.join(pieces[:len(pieces)-1])+'.'
-    words = pieces.split()
+    words = csv_string.split()
     for i, word in enumerate(words):
         if word == 'xxbos':
-            words[i] = '<br/>'
+            words[i] = ''
         elif word == 'xxmaj':
-            words[i+1] = words[i+1][0].upper() + words[i+1][1:]
+            if words[i+1]:
+                words[i+1] = words[i+1][0].upper() + words[i+1][1:]
             words[i] = ''
         elif word == 'xxup':
-            words[i+1] = words[i+1].upper()
-            words[i] = ''     
-        elif word == 'xxunk' or word == '(' or word == ')' or word == '"':
-            words[i] = ''   
-        elif word == ',':
+            if words[i+1]:
+                words[i+1] = words[i+1].upper()
             words[i] = ''
-        elif word == '.' or word == '?' or word == '!' or word == ';':
-            words[i-1]+= words[i]
+        elif word == 'xxunk' or word == '(' or word == ')' or word == '"':
+            words[i] = ''
+        elif word == '.' or word == '!' or word == '?' or word == ';' or word == ',' or word == ':':
+            words[i-1] += words[i]
             words[i] = ''
         elif word[0] == "'":
-            words[i-1]+= words[i]
-            words[i] = ''
+            if words[i-1]:
+                words[i-1] += words[i]
+                words[i] = ''
+    res = ' '.join(words).strip()
+    res = re.sub(r"\s+", " ", res)
+    res = trimResponse(res, 0)
+    return res
 
-    return ' '.join(words)
 
 if __name__ == '__main__':
     if 'serve' in sys.argv: uvicorn.run(app, host='0.0.0.0', port=4000)
