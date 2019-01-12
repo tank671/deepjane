@@ -6,3 +6,5 @@ python-multipart
 aiofiles
 aiohttp
 numpy
+apscheduler
+tweepy==3.7.0
