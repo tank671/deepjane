@@ -1,5 +1,4 @@
 import tweepy
-from apscheduler.schedulers.background import BackgroundScheduler
 
 exec(open("./config").read())
 exec(open("./twitter_austen.py").read())
