@@ -82,3 +82,24 @@ def generate_tweet(printing=False):
     else:
         generate_tweet()
 
+def tweet_response(text, user, msg_id):
+    starter = " ".join(text)
+    res = textResponse(starter)
+    res = clean_tweet(res)
+    tweet = "@" + str(user) + " " + res
+    api.update_status(tweet, msg_id, True)
+
+class MyStreamListener(tweepy.StreamListener):
+    def on_status(self, status):
+        if status.text.split()[0] == '@AutoAusten':
+            user = status.user.screen_name
+            msg_id = status.id
+            starter = status.text.split()[1:]
+            print(msg_id)
+            tweet_response(starter, user, msg_id)
+      
+myStreamListener = MyStreamListener()
+myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
+myStream.filter(track=['@AutoAusten'], is_async=True)
+
+
